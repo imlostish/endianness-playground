@@ -100,6 +100,8 @@ many bytes we want to move.
 
 This pattern generalizes to any type (uint8_t, uint32_t, uint64_t, even raw structs).
 
+#### Serialize and Deserialize, Alignment and padding of `struct` in C
+
 ---
 
 ### Spanish
@@ -190,3 +192,75 @@ La operación `(val & 0x000000FF)` aísla el byte deseado. Con `>> <i>` o `<< <i
 > Extra: Se usa & para extraer, | para unir, ^ para alternar, ~ para negar.
 
 Este patrón se generaliza a cualquier tipo (uint8_t, uint32_t, uint64_t, incluso estructuras sin formato).
+
+---
+
+#### Serializar y deserializar, alineación y relleno de `struct` en C
+
+Ahora que comprendemos las bases del endianismo, ¿Como lo podemos
+usar en estructuras complejas como `struct` en C? o ¿Como podemos
+llevar a un nivel mas alto lo que aprendimos?
+
+En esta seccion aprenderemos sobre los conceptos de serializacion,
+deserializacion, alineación y relleno. Los conceptos se entre lanzaran
+en el desarrollo de una implementación que explique practicamente
+como manejarlos que se detallan en [sd.c](./src/sd.c).
+
+Si quieres una referencia de como usar parte de los conceptos manejados
+en esta seccion, consulta [reference](./src/reference.c) para una
+documentacion en codigo.
+
+Para empezar, aprendamos dos conceptos muy importantes, explicados por [nach131](https://github.com/nach131) en [Serialize and Deserialize](https://nach131.github.io/cpp42projects/guias/cpp_c5/module06/serializar).
+
+> La serialización es el proceso de convertir un objeto o estructura de
+> datos en una representación binaria o textual que puede ser almacenada en un
+> archivo, enviada por red o guardada en una base de datos. La idea detrás de la
+> serialización es convertir los datos del objeto en una forma más compacta y
+> fácil de transportar.
+>
+> El proceso de deserializar se refiere a la conversión inversa, donde un archivo
+> binario o textual se lee y se convierte de nuevo en un objeto o estructura
+> de datos en memoria. Esto permite recuperar los datos del archivo original y
+> volverlos accesibles para ser utilizados por el programa.
+>
+> Estos son conceptos fundamentales en programación, especialmente cuando trabajas
+> con comunicación de red, almacenamiento persistente de datos o cualquier
+> situación donde necesitas convertir estructuras de datos en formatos que puedan
+> ser gestionados de manera más fácil.
+
+**A diferencia del ejemplo de @nach131, no usaremos C++.**
+
+📦 Serialización
+  - Tome una estructura como entrada.
+  - Cree un `uint8_t buffer[N]`.
+  - Copie cada campo manualmente en orden usando memcpy, shift o casting seguro.
+  - Aplique endianismo por campo.
+
+📥 Deserialización
+  - Reciba un `uint8_t*` y tamaño.
+  - Lea byte por byte.
+  - Reconstruya los campos y convierta desde endianismo.
+  - Llene la estructura destino.
+
+> No usaremos `raw pointers`, por que perderemos seguridad
+> de tipos, no tiene un tamaño definido, no podemos desreferenciarlo
+> y puede causar problemas a la hora de leer nuestro binario para
+> el proceso de deserializacion.
+> No exploraremos mucho de los `raw pointers` pero puedes consultar ["Raw pointers (C++)"][8] o [why do void* pointers even exist? by low level tv](https://www.youtube.com/watch?v=t7CUti_7d7c).
+
+Usaremos offsets y sizes para ubicar y recorrer los datos con IDs
+para identificar tipos o estructuras serializadas.
+
+Aunque [`#pragma pack(1)` deshabilita el padding en las estructuras
+y permite el conflicto de desalineamiento que genera dificultades
+en la generacion de codigo ensamblador (para RISC)][4].
+
+[1]: https://gcc.gnu.org/onlinedocs/gcc-4.1.0/gcc/Type-Attributes.html "5.32 Specifying Attributes of Types"
+[2]: https://www.gnu.org/software/c-intro-and-ref/manual/html_node/Packed-Structures.html "15.6 Packed Structures"
+[3]: https://learn.microsoft.com/en-us/cpp/preprocessor/pack?view=msvc-170 "#pragma pack docs"
+[4]: https://devblogs.microsoft.com/oldnewthing/20200103-00/?p=103290 "Anybody who writes #pragma pack(1) may as well just wear a sign on their forehead that says “I hate RISC”"
+[5]: https://stackoverflow.com/a/3318475 "#pragma pack effect"
+[6]: https://stackoverflow.com/a/11772340 "What is the meaning of \"__attribute__((packed, aligned(4))) \""
+[7]: https://stackoverflow.com/a/11669250 "Why does padding have to be a power of two?"
+[8]: https://learn.microsoft.com/en-gb/cpp/cpp/raw-pointers?view=msvc-170 "Raw pointers (C++)"
+[9]: https://www.youtube.com/watch?v=t7CUti_7d7c "why do void* pointers even exist? by low level tv"
