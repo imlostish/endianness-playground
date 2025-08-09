@@ -197,10 +197,6 @@ Este patrón se generaliza a cualquier tipo (uint8_t, uint32_t, uint64_t, inclus
 
 #### Serializar y deserializar, alineación y relleno de `struct` en C
 
-Ahora que comprendemos las bases del endianismo, ¿Como lo podemos
-usar en estructuras complejas como `struct` en C? o ¿Como podemos
-llevar a un nivel mas alto lo que aprendimos?
-
 En esta seccion aprenderemos sobre los conceptos de serializacion,
 deserializacion, alineación y relleno. Los conceptos se entre lanzaran
 en el desarrollo de una implementación que explique practicamente
@@ -232,21 +228,17 @@ Para empezar, aprendamos dos conceptos muy importantes, explicados por [nach131]
 
 📦 Serialización
   - Tome una estructura como entrada.
-  - Cree un `uint8_t buffer[N]`.
-  - Copie cada campo manualmente en orden usando memcpy, shift o casting seguro.
+  - Crea un `uint<n>_t buffer[N]`.
+  - Copia cada campo manualmente en orden usando memcpy, shift o casting seguro.
   - Aplique endianismo por campo.
 
 📥 Deserialización
-  - Reciba un `uint8_t*` y tamaño.
+  - Reciba un `uint<n>_t* buffer[N]` y tamaño.
   - Lea byte por byte.
-  - Reconstruya los campos y convierta desde endianismo.
+  - Reconstruya los campos.
   - Llene la estructura destino.
 
-> No usaremos `raw pointers`, por que perderemos seguridad
-> de tipos, no tiene un tamaño definido, no podemos desreferenciarlo
-> y puede causar problemas a la hora de leer nuestro binario para
-> el proceso de deserializacion.
-> No exploraremos mucho de los `raw pointers` pero puedes consultar ["Raw pointers (C++)"][8] o [why do void* pointers even exist? by low level tv](https://www.youtube.com/watch?v=t7CUti_7d7c).
+> No exploraremos mucho de los `raw pointers` pero puedes consultar ["Raw pointers (C++)"][8] o [why do void* pointers even exist? by low level tv][9].
 
 Usaremos offsets y sizes para ubicar y recorrer los datos con IDs
 para identificar tipos o estructuras serializadas.
